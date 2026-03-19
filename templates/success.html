@@ -1,53 +1,16 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment Successful - AI Dev Flow</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @keyframes orbit {
-            from { transform: rotate(0deg) translateX(100px) rotate(0deg); }
-            to { transform: rotate(360deg) translateX(100px) rotate(-360deg); }
-        }
-        .orbit-icon { animation: orbit 4s linear infinite; }
-    </style>
 </head>
-<body class="bg-slate-950 text-white min-h-screen flex items-center justify-center font-sans overflow-hidden">
-
-    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-[120px] -z-10"></div>
-
-    <div class="max-w-md w-full p-8 text-center bg-slate-900/50 border border-slate-800 rounded-3xl backdrop-blur-xl shadow-2xl">
-        
-        <div class="relative w-32 h-32 mx-auto mb-8">
-            <div class="absolute inset-0 border-4 border-indigo-500/20 rounded-full"></div>
-            <div class="absolute inset-0 border-t-4 border-indigo-500 rounded-full animate-spin"></div>
-            <div class="absolute inset-0 flex items-center justify-center">
-                <svg class="w-12 h-12 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
-                </svg>
-            </div>
-        </div>
-
-        <h1 class="text-3xl font-black mb-2 tracking-tight">Payment Received!</h1>
-        <p class="text-slate-400 mb-8">Upgrading your account to <span class="text-indigo-400 font-bold">PRO</span>. Please wait a moment...</p>
-
-        <form id="activateForm" action="/activate" method="POST">
-            <input type="hidden" name="email" value="{{ email }}">
-            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-95">
-                Take me to the App
-            </button>
-        </form>
-
-        <p class="mt-6 text-[10px] text-slate-500 uppercase tracking-widest font-bold">Secured by Paystack & Firebase</p>
+<body class="bg-slate-950 text-white flex items-center justify-center min-h-screen text-center p-6">
+    <div class="max-w-sm">
+        <div class="w-20 h-20 bg-indigo-600/20 text-indigo-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-6">✓</div>
+        <h1 class="text-3xl font-black mb-4">Payment Successful!</h1>
+        <p class="text-slate-500 mb-8 leading-relaxed">Your account has been upgraded to **PRO**. You now have lifetime access to project history and unlimited generations.</p>
+        <a href="/app" class="inline-block bg-white text-black font-black px-10 py-4 rounded-2xl hover:bg-slate-200 transition-all">
+            Back to Dashboard
+        </a>
     </div>
-
-    <script>
-        // Automatically submit the form after 3 seconds to trigger the database update
-        setTimeout(() => {
-            document.getElementById('activateForm').submit();
-        }, 3000);
-    </script>
-
 </body>
 </html>

@@ -8,55 +8,37 @@
     <script src="https://js.paystack.co/v1/inline.js"></script>
 </head>
 <body class="bg-slate-950 text-white flex items-center justify-center min-h-screen p-6">
-    
-    <div class="max-w-md w-full p-10 bg-slate-900 border border-slate-800 rounded-[3rem] shadow-2xl relative overflow-hidden">
-        <div class="absolute -top-24 -right-24 w-48 h-48 bg-indigo-600/20 blur-[80px]"></div>
-        
-        <h2 class="text-3xl font-black mb-2 text-center">Unlock Pro</h2>
-        <p class="text-slate-500 text-sm text-center mb-10 leading-relaxed">Get lifetime access to project history and premium architectural logic.</p>
+    <input type="hidden" id="pk-val" value="{{ paystack_key }}">
+    <input type="hidden" id="em-val" value="{{ session.get('user_email', 'guest@example.com') }}">
 
-        <div class="bg-indigo-600/10 border border-indigo-500/20 py-10 rounded-[2rem] text-center mb-10">
+    <div class="max-w-md w-full p-10 bg-slate-900 border border-slate-800 rounded-[3rem] shadow-2xl text-center">
+        <h2 class="text-3xl font-black mb-2 tracking-tighter">Unlock Pro</h2>
+        <p class="text-slate-500 text-sm mb-10">Get lifetime access to project history and unlimited blueprints.</p>
+
+        <div class="bg-indigo-600/10 border border-indigo-500/20 py-10 rounded-[2rem] mb-10">
             <span class="text-6xl font-black">₦200</span>
-            <div class="text-[10px] uppercase font-bold text-indigo-400 tracking-[0.2em] mt-3">One-Time Payment</div>
+            <div class="text-[10px] uppercase font-bold text-indigo-400 tracking-[0.2em] mt-3">One-Time Fee</div>
         </div>
 
-        <button onclick="payWithPaystack()" class="w-full bg-white text-black font-black py-5 rounded-2xl hover:bg-slate-200 transition-all shadow-xl active:scale-95 text-lg">
+        <button onclick="initPayment()" class="w-full bg-white text-black font-black py-5 rounded-2xl hover:bg-slate-200 transition-all shadow-xl active:scale-95 text-lg">
             Pay Now Securely
         </button>
-
-        <div class="mt-10 pt-8 border-t border-slate-800/50">
-            <h4 class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-4 text-center">Estimated International Price</h4>
-            <div class="grid grid-cols-2 gap-x-8 gap-y-3 text-[11px] text-slate-500">
-                <div class="flex justify-between"><span>🇺🇸 USD</span><span class="text-white">~$0.14</span></div>
-                <div class="flex justify-between"><span>🇪🇺 EUR</span><span class="text-white">~€0.12</span></div>
-                <div class="flex justify-between"><span>🇬🇧 GBP</span><span class="text-white">~£0.10</span></div>
-                <div class="flex justify-between"><span>🇨🇦 CAD</span><span class="text-white">~$0.18</span></div>
-            </div>
-        </div>
     </div>
 
     <script>
-        function payWithPaystack() {
-            // Pulling variables from Flask context as strings to prevent Qoder syntax errors
-            const publicKey = "{{ paystack_key }}";
-            const userEmail = "{{ session.get('user_email', 'customer@example.com') }}";
+        function initPayment() {
+            const key = document.getElementById('pk-val').value;
+            const email = document.getElementById('em-val').value;
 
-            if (!publicKey || publicKey === "None") {
-                alert("Missing Paystack Public Key. Please check Vercel Environment Variables.");
-                return;
-            }
+            if(!key || key === "None") return alert("Error: API Key missing in Vercel settings.");
 
             let handler = PaystackPop.setup({
-                key: publicKey,
-                email: userEmail,
-                amount: 200 * 100, // 200.00 Naira
+                key: key,
+                email: email,
+                amount: 20000, // 200 Naira
                 currency: "NGN",
                 callback: function(response) {
-                    // Redirect to your success route
                     window.location.href = "/payment_success?reference=" + response.reference;
-                },
-                onClose: function() {
-                    alert('Transaction cancelled. Your progress is saved.');
                 }
             });
             handler.openIframe();

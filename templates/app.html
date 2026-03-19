@@ -10,123 +10,58 @@
 </head>
 <body class="bg-slate-950 text-white min-h-screen flex flex-col font-sans">
 
+    <div id="app-config" 
+         data-is-paid="{{ is_paid }}" 
+         data-email="{{ session.get('user_email', 'guest@example.com') }}">
+    </div>
+
     <nav class="border-b border-slate-900 px-8 py-4 flex justify-between items-center bg-slate-950/50 backdrop-blur-md sticky top-0 z-50">
-        <div class="font-black tracking-tighter text-xl text-indigo-500">AI DEV FLOW</div>
-        <div class="flex items-center gap-4">
+        <div class="font-black tracking-tighter text-xl">AI DEV FLOW</div>
+        <div>
             {% if not is_paid %}
-            <a href="/unlock" class="text-xs font-bold bg-indigo-600 px-6 py-2 rounded-full hover:bg-indigo-500 transition">Upgrade to Pro</a>
+            <a href="/unlock" class="text-xs font-bold bg-indigo-600 px-6 py-2 rounded-full hover:bg-indigo-500 transition shadow-lg">Upgrade to Pro</a>
             {% else %}
-            <span class="text-xs text-indigo-400 font-bold border border-indigo-500/30 px-3 py-1 rounded-full uppercase tracking-widest">Pro Member</span>
+            <span class="text-xs text-indigo-400 font-bold border border-indigo-500/20 px-3 py-1 rounded-full uppercase tracking-widest">Pro Member</span>
             {% endif %}
         </div>
     </nav>
 
-    <main class="flex-1 p-6 md:p-12 overflow-y-auto max-w-5xl mx-auto w-full space-y-8">
+    <main class="flex-1 p-6 md:p-12 max-w-5xl mx-auto w-full space-y-8">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="space-y-2">
                 <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Tech Stack</label>
-                <select id="techStack" class="w-full bg-slate-900 border border-slate-800 rounded-2xl p-4 outline-none focus:ring-2 focus:ring-indigo-500">
-                    <option>Flask / Python</option>
-                    <option>Node.js / Express</option>
-                    <option>Next.js / React</option>
-                    <option>Django / Python</option>
+                <select id="techStack" class="w-full bg-slate-900 border border-slate-800 rounded-2xl p-4 outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+                    <option value="Flask">Flask / Python</option>
+                    <option value="NodeJS">Node.js / Express</option>
+                    <option value="NextJS">Next.js / React</option>
+                    <option value="Django">Django / Python</option>
                 </select>
             </div>
             <div class="space-y-2">
-                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Goal</label>
-                <select id="actionType" class="w-full bg-slate-900 border border-slate-800 rounded-2xl p-4 outline-none focus:ring-2 focus:ring-indigo-500">
-                    <option>Initial Project Scaffold</option>
-                    <option>Code Refactor</option>
-                    <option>Security Audit</option>
+                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Architectural Goal</label>
+                <select id="actionType" class="w-full bg-slate-900 border border-slate-800 rounded-2xl p-4 outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+                    <option value="Scaffold">Initial Project Scaffold</option>
+                    <option value="Refactor">Code Refactor</option>
+                    <option value="Audit">Security Audit</option>
                 </select>
             </div>
         </div>
 
-        <textarea id="userInput" class="w-full h-48 bg-slate-900 border border-slate-800 rounded-3xl p-6 text-white outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Describe your project..."></textarea>
+        <textarea id="userInput" class="w-full h-48 bg-slate-900 border border-slate-800 rounded-3xl p-6 text-white outline-none focus:ring-2 focus:ring-indigo-500 shadow-inner" placeholder="Describe your project requirements..."></textarea>
         
-        <button id="generateBtn" class="w-full bg-indigo-600 py-5 rounded-2xl font-black text-lg hover:bg-indigo-500 transition-all shadow-lg active:scale-[0.98]">
+        <button id="generateBtn" class="w-full bg-indigo-600 py-5 rounded-2xl font-black text-lg hover:bg-indigo-500 transition-all active:scale-[0.98]">
             Generate Professional Architecture
         </button>
 
         <div id="outputArea" class="hidden space-y-4 pt-10 pb-20">
             <div class="flex justify-between items-center">
                 <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Blueprint Result</span>
-                <button onclick="copyToClipboard()" class="text-xs text-slate-500 hover:text-white transition">Copy Result</button>
+                <button id="copyBtn" class="text-xs text-slate-500 hover:text-white transition">Copy Result</button>
             </div>
             <pre id="resultBox" class="p-8 bg-slate-900 border border-slate-800 rounded-3xl text-sm font-mono whitespace-pre-wrap leading-relaxed overflow-x-auto text-indigo-50 shadow-2xl"></pre>
         </div>
     </main>
 
-    <script>
-        // --- 1. FIREBASE CONFIG ---
-        // REPLACE THESE WITH YOUR ACTUAL KEYS FROM FIREBASE CONSOLE
-          const firebaseConfig = {
-  apiKey: "AIzaSyAh6UnFZg1G62Wyb5MnGx-Zv39SsvcY1Ic",
-  authDomain: "mearning-e6e84.firebaseapp.com",
-  projectId: "mearning-e6e84",
-  storageBucket: "mearning-e6e84.firebasestorage.app",
-  messagingSenderId: "143184887313",
-  appId: "1:143184887313:web:804f4281bcef676d903bb0",
-  measurementId: "G-1HGVBBJGCD"
-};
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-
-        // --- 2. LOGIC ---
-        // Passing Jinja variables to JS as strings to avoid Qoder syntax errors
-        const isPaidUser = "{{ is_paid }}"; 
-        const userEmail = "{{ session.get('user_email', '') }}";
-
-        document.getElementById('generateBtn').addEventListener('click', async () => {
-            const stack = document.getElementById('techStack').value;
-            const type = document.getElementById('actionType').value;
-            const prompt = document.getElementById('userInput').value;
-            
-            if(!prompt) return alert("Please enter your requirements!");
-
-            const res = await fetch('/generate_prompt', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    prompt: `STACK: ${stack}\nTYPE: ${type}\nGOAL: ${prompt}`
-                })
-            });
-
-            if(res.status === 403) {
-                alert("🚀 Daily Free Limit Reached! Redirecting to unlock Pro for lifetime access.");
-                window.location.href = '/unlock';
-                return;
-            }
-
-            const data = await res.json();
-            if (data.result) {
-                document.getElementById('resultBox').innerText = data.result;
-                document.getElementById('outputArea').classList.remove('hidden');
-                
-                // Check Pro status safely
-                if (isPaidUser === "True" && userEmail !== "") {
-                    saveHistory(prompt, data.result);
-                }
-            }
-        });
-
-        async function saveHistory(title, content) {
-            try {
-                await db.collection('users').doc(userEmail).collection('history').add({
-                    title: title,
-                    content: content,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                });
-            } catch (e) {
-                console.error("Error saving history: ", e);
-            }
-        }
-
-        function copyToClipboard() {
-            const text = document.getElementById('resultBox').innerText;
-            navigator.clipboard.writeText(text);
-            alert("Architecture copied!");
-        }
-    </script>
+    <script src="/static/js/main.js"></script>
 </body>
 </html>

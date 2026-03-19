@@ -1,14 +1,13 @@
 import os
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
-import google.generativeai as genai
 from firebase_admin import credentials, firestore, initialize_app
 
 app = Flask(__name__)
-# IMPORTANT: Change this to a random string in Vercel Env Vars
-app.secret_key = os.getenv("FLASK_SECRET", "dev-secret-123")
+# Set a secret key for sessions
+app.secret_key = os.getenv("FLASK_SECRET", "startup-dev-key-2026")
 
 # 1. FIREBASE SETUP
-# This uses Environment Variables set in Vercel for security
+# (Uses Environment Variables from Vercel)
 if not len(initialize_app.__defaults__):
     cred_dict = {
         "type": "service_account",
@@ -22,18 +21,14 @@ if not len(initialize_app.__defaults__):
 
 db = firestore.client()
 
-# 2. GEMINI AI SETUP
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-model = genai.GenerativeModel('gemini-pro')
-
 @app.route('/')
 def index():
     return render_template('index.html')
 
 @app.route('/app')
 def main_app():
-    # We use a placeholder email for testing if session is empty
-    email = session.get('user_email', 'tester@example.com')
+    # Use a test email if no session exists
+    email = session.get('user_email', 'guest_tester@example.com')
     session['user_email'] = email
     
     user_ref = db.collection('users').document(email)
@@ -48,47 +43,58 @@ def main_app():
 @app.route('/generate_prompt', methods=['POST'])
 def generate():
     email = session.get('user_email')
-    if not email:
-        return jsonify({"error": "session_expired"}), 401
-
     user_ref = db.collection('users').document(email)
     user_doc = user_ref.get()
     
-    # --- LIMIT LOGIC ---
     user_data = user_doc.to_dict() if user_doc.exists else {"count": 0, "is_paid": False}
     is_paid = user_data.get('is_paid', False)
     count = user_data.get('count', 0)
 
-    # If NOT paid and count is 3 or more, block them
+    # BLOCK if user hit 3 prompts and hasn't paid
     if not is_paid and count >= 3:
         return jsonify({"error": "limit_reached"}), 403
 
-    # --- AI GENERATION ---
-    user_prompt = request.json.get('prompt')
-    try:
-        response = model.generate_content(f"Act as a Senior Architect. {user_prompt}")
-        
-        # Increment prompt count in Firebase
-        user_ref.set({"count": count + 1}, merge=True)
-        
-        return jsonify({"result": response.text})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    # MOCK AI RESPONSE (Placeholder until you get capital for API)
+    data = request.json
+    stack = data.get('stack', 'General')
+    goal = data.get('goal', 'Architecture')
+    
+    mock_response = f"""
+🚀 {goal} Blueprint for {stack}
+---------------------------------------
+[PROTOTYPE MODE: AI DISCONNECTED]
+
+Proposed Structure:
+/src
+  /api       -> Route handlers
+  /core      -> Middleware & Auth
+  /models    -> Database schemas
+  /services  -> Business logic
+
+Security Recommendations:
+1. Implement JWT for session handling.
+2. Use CORS headers for cross-origin safety.
+3. Sanitize all user inputs before DB entry.
+
+(Upgrade to PRO to unlock full detailed logic)
+    """
+    
+    # Increment the usage count
+    user_ref.set({"count": count + 1}, merge=True)
+    
+    return jsonify({"result": mock_response})
 
 @app.route('/unlock')
 def unlock():
-    # We pass the Paystack Public Key here so unlock.html can use it
-    paystack_pk = os.getenv("PAYSTACK_PUBLIC_KEY")
-    return render_template('unlock.html', paystack_key=paystack_pk)
+    pk = os.getenv("PAYSTACK_PUBLIC_KEY")
+    return render_template('unlock.html', paystack_key=pk)
 
 @app.route('/payment_success')
 def payment_success():
     email = session.get('user_email')
     if email:
-        # Update user to PRO status
         db.collection('users').document(email).set({"is_paid": True}, merge=True)
-        
-    return render_template('success.html') # Create a simple success page or redirect
+    return render_template('success.html')
 
 if __name__ == '__main__':
     app.run(debug=True)

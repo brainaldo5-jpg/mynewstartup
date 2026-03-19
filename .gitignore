@@ -1,0 +1,35 @@
+# --- SECRETS (NEVER UPLOAD THESE) ---
+.env
+firebase-key.json
+
+# --- PYTHON SETTINGS ---
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# --- VIRTUAL ENVIRONMENTS ---
+venv/
+.venv/
+env/
+ENV/
+bin/
+lib/
+develop-eggs/
+dist/
+eggs/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+
+# --- OPERATING SYSTEM ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- LOCAL DATA ---
+data/
+*.log
